@@ -1,0 +1,410 @@
+/* ==========================================================================
+   Multikart design tokens
+   Palette:  Indigo #4F46E5 (primary) / Amber #F59E0B (accent, discounts)
+             Slate #1E293B (ink) / Cloud #F8FAFC (surface) / Emerald #16A34A (success)
+   Type:     Sora (display/headings) + Inter (body/data)
+   ========================================================================== */
+
+:root {
+  --mk-primary: #4f46e5;
+  --mk-primary-dark: #4338ca;
+  --mk-accent: #f59e0b;
+  --mk-ink: #1e293b;
+  --mk-ink-soft: #64748b;
+  --mk-surface: #f8fafc;
+  --mk-surface-alt: #eef2ff;
+  --mk-success: #16a34a;
+  --mk-danger: #dc2626;
+  --mk-border: #e2e8f0;
+
+  /* Remap Bootstrap's own variables so every built-in component (buttons,
+     badges, navbar, forms, tables...) picks up the theme automatically */
+  --bs-primary: var(--mk-primary);
+  --bs-primary-rgb: 79, 70, 229;
+  --bs-success: var(--mk-success);
+  --bs-success-rgb: 22, 163, 74;
+  --bs-danger: var(--mk-danger);
+  --bs-danger-rgb: 220, 38, 38;
+  --bs-warning: var(--mk-accent);
+  --bs-warning-rgb: 245, 158, 11;
+  --bs-body-color: var(--mk-ink);
+  --bs-body-bg: var(--mk-surface);
+  --bs-border-color: var(--mk-border);
+  --bs-link-color: var(--mk-primary);
+  --bs-link-hover-color: var(--mk-primary-dark);
+  --bs-border-radius: 0.6rem;
+  --bs-border-radius-sm: 0.4rem;
+  --bs-border-radius-lg: 0.9rem;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--mk-ink);
+  background-color: var(--mk-surface);
+}
+
+h1, h2, h3, h4, h5, h6,
+.mk-display {
+  font-family: 'Sora', system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--mk-ink);
+  letter-spacing: -0.01em;
+}
+
+a {
+  text-decoration: none;
+}
+
+.btn {
+  font-weight: 600;
+  border-radius: 0.55rem;
+}
+
+.btn-primary {
+  border-color: var(--mk-primary);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--mk-primary-dark);
+  border-color: var(--mk-primary-dark);
+}
+
+/* ---- Navbar ------------------------------------------------------------ */
+.mk-navbar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--mk-border);
+}
+
+.mk-brand {
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--mk-ink) !important;
+  letter-spacing: -0.02em;
+}
+.mk-brand span {
+  color: var(--mk-primary);
+}
+
+.mk-cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  font-size: 0.65rem;
+}
+
+/* ---- Hero section --------------------------------------------------------- */
+.mk-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 55%, #6366f1 100%);
+  color: #fff;
+  isolation: isolate;
+}
+
+.mk-hero::before {
+  /* subtle dot-grid texture for depth without a cliché gradient blob */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  z-index: -1;
+}
+
+.mk-hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  z-index: -1;
+  opacity: 0.55;
+}
+
+.mk-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.mk-hero-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: #fff;
+  line-height: 1.1;
+}
+
+.mk-hero-stat-value {
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 1.6rem;
+}
+
+.mk-hero-stat-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Category rail (home page signature element) ----------------------- */
+.mk-category-rail {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.mk-category-pill {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid var(--mk-border);
+  color: var(--mk-ink);
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.mk-category-pill:hover {
+  border-color: var(--mk-primary);
+  color: var(--mk-primary);
+  transform: translateY(-1px);
+}
+
+.mk-category-pill.active {
+  background: var(--mk-primary);
+  border-color: var(--mk-primary);
+  color: #fff;
+}
+
+/* ---- Product card -------------------------------------------------------- */
+.mk-product-card {
+  border: 1px solid var(--mk-border);
+  border-radius: var(--bs-border-radius-lg);
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  height: 100%;
+}
+
+.mk-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -12px rgba(30, 41, 59, 0.18);
+}
+
+.mk-product-thumb-wrap {
+  overflow: hidden;
+}
+
+.mk-product-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: var(--mk-surface-alt);
+  transition: transform 0.35s ease;
+  display: block;
+}
+
+.mk-product-card:hover .mk-product-thumb {
+  transform: scale(1.07);
+}
+
+.mk-price-strike {
+  color: var(--mk-ink-soft);
+  text-decoration: line-through;
+  font-size: 0.85rem;
+}
+
+.mk-price-final {
+  color: var(--mk-ink);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.mk-discount-badge {
+  background: var(--mk-accent);
+  color: #1e293b;
+  font-weight: 700;
+}
+
+/* ---- Auth / split-screen pages ------------------------------------------- */
+.mk-auth-page {
+  min-height: calc(100vh - 62px);
+}
+
+.mk-auth-panel {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(155deg, #4338ca 0%, #4f46e5 60%, #6366f1 100%);
+  color: #fff;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.mk-auth-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  z-index: 0;
+}
+
+.mk-auth-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.mk-auth-panel-blob {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--mk-accent);
+  filter: blur(60px);
+  opacity: 0.35;
+  z-index: 0;
+}
+
+.mk-auth-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.mk-auth-feature-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mk-auth-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  background: var(--mk-surface);
+}
+
+/* ---- Dashboard shell (admin/vendor) -------------------------------------- */
+.mk-dash-sidebar {
+  background: var(--mk-ink);
+  min-height: calc(100vh - 62px);
+}
+
+.mk-dash-sidebar .nav-link {
+  color: #cbd5e1;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.15rem;
+}
+
+.mk-dash-sidebar .nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mk-dash-sidebar .nav-link.active {
+  color: #fff;
+  background: var(--mk-primary);
+}
+
+.mk-stat-card {
+  border: 1px solid var(--mk-border);
+  border-radius: var(--bs-border-radius-lg);
+  background: #fff;
+  padding: 1.25rem 1.5rem;
+}
+
+.mk-stat-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--mk-ink);
+}
+
+.mk-stat-label {
+  color: var(--mk-ink-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Status badges ------------------------------------------------------- */
+.mk-status-placed { background: #e2e8f0; color: #334155; }
+.mk-status-confirmed { background: #dbeafe; color: #1e40af; }
+.mk-status-processing { background: #fef3c7; color: #92400e; }
+.mk-status-shipped { background: #ede9fe; color: #5b21b6; }
+.mk-status-out_for_delivery { background: #fae8ff; color: #86198f; }
+.mk-status-delivered { background: #dcfce7; color: #166534; }
+.mk-status-cancelled { background: #fee2e2; color: #991b1b; }
+
+/* ---- Footer --------------------------------------------------------------- */
+.mk-footer {
+  background: var(--mk-ink);
+  color: #cbd5e1;
+}
+
+.mk-footer h6 {
+  color: #fff;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mk-footer a {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.mk-footer a:hover {
+  color: #fff;
+}
+
+.mk-footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Misc ------------------------------------------------------------- */
+.mk-empty-state {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  color: var(--mk-ink-soft);
+}
+
+.mk-star {
+  color: var(--mk-accent);
+}
+
+.mk-star-empty {
+  color: var(--mk-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-product-card,
+  .mk-category-pill {
+    transition: none;
+  }
+}
