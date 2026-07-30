@@ -20,8 +20,8 @@ const Register = () => {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Account created! Welcome to Multikart.');
-      navigate('/');
+toast.success("Account created successfully! Please login.");
+navigate("/login");
     } catch (err) {
       const apiError = err.response?.data;
       setError(apiError?.errors?.[0]?.message || apiError?.message || 'Registration failed. Please try again.');

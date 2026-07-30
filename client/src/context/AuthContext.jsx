@@ -60,11 +60,11 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
-  const register = async (payload) => {
-    const { data } = await axiosInstance.post('/auth/register', payload);
-    persistSession(data.token, data.user);
-    return data.user;
-  };
+ const register = async (payload) => {
+  const { data } = await axiosInstance.post('/auth/register', payload);
+  // Don't log the user in here
+  return data;
+};
 
   const logout = () => {
     clearSession();
