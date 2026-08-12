@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 
 // ======================================================
@@ -290,9 +292,10 @@ const changePassword = async (req, res) => {
 // FORGOT PASSWORD
 // ======================================================
 
+
+
 const forgotPassword = async (req, res) => {
     try {
-
         const { email } = req.body;
 
         // Find user
@@ -305,65 +308,71 @@ const forgotPassword = async (req, res) => {
             });
         }
 
-        // Generate reset token
+        // Generate random token
         const resetToken = crypto.randomBytes(32).toString("hex");
 
-        // Hash token before saving to database
+        // Hash token before storing in database
         const hashedToken = crypto
             .createHash("sha256")
             .update(resetToken)
             .digest("hex");
 
-        // Token expires after 15 minutes
+        // Save token and expiry
         user.resetPasswordToken = hashedToken;
-        user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+        user.resetPasswordExpire = new Date(
+            Date.now() + 15 * 60 * 1000
+        );
 
         await user.save();
 
-        // Reset password URL
-        const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+        // Frontend reset URL
+        const resetUrl =
+            `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-        const message = `
-            <h2>Password Reset Request</h2>
+        const html = `
+            <div style="font-family: Arial, sans-serif;">
+                <h2>Password Reset</h2>
 
-            <p>Hello ${user.name},</p>
+                <p>Hello ${user.name},</p>
 
-            <p>
-                You requested to reset your password.
-            </p>
+                <p>
+                    You requested to reset your password.
+                </p>
 
-            <p>
-                Click the button below to reset your password.
-            </p>
+                <p>
+                    Click the button below:
+                </p>
 
-            <a
-                href="${resetUrl}"
-                style="
-                    display:inline-block;
-                    padding:10px 20px;
-                    background:#007bff;
-                    color:white;
-                    text-decoration:none;
-                    border-radius:5px;
-                "
-            >
-                Reset Password
-            </a>
+                <a
+                    href="${resetUrl}"
+                    style="
+                        display:inline-block;
+                        padding:12px 20px;
+                        background:#007bff;
+                        color:white;
+                        text-decoration:none;
+                        border-radius:5px;
+                    "
+                >
+                    Reset Password
+                </a>
 
-            <p>
-                This link will expire in 15 minutes.
-            </p>
+                <p>
+                    This link will expire in 15 minutes.
+                </p>
 
-            <p>
-                If you did not request this, please ignore this email.
-            </p>
+                <p>
+                    If you did not request a password reset,
+                    you can safely ignore this email.
+                </p>
+            </div>
         `;
 
         // Send email
         await sendEmail(
             user.email,
             "Password Reset Request",
-            message
+            html
         );
 
         return res.status(200).json({
@@ -372,6 +381,7 @@ const forgotPassword = async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Forgot Password Error:", error);
 
         return res.status(500).json({
             success: false,
