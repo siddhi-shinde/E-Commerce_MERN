@@ -64,7 +64,7 @@ const OrderDetails = () => {
   return (
     <Container className="py-4">
       {location.state?.justPlaced && (
-        <Alert variant="success">Your order has been placed successfully! A confirmation email is on its way.</Alert>
+        <Alert variant="success">"Order placed successfully. Confirmation email sent."</Alert>
       )}
 
       <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">

@@ -14,6 +14,8 @@ import MyOrders from './pages/MyOrders';
 import OrderDetails from './pages/OrderDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
@@ -57,6 +59,8 @@ function App() {
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Any logged-in user */}

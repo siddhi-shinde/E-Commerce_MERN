@@ -1,28 +1,84 @@
-const express = require('express');
-const router = express.Router();
-const {
-  registerUser,
-  loginUser,
-  getUserInfo,
-  changePassword,
-  forgotPassword,
-  resetPassword,
-} = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
-const { validate } = require('../middleware/validationMiddleware');
-const {
-  registerValidator,
-  loginValidator,
-  changePasswordValidator,
-  forgotPasswordValidator,
-  resetPasswordValidator,
-} = require('../validators/authValidator');
+const express = require("express");
 
-router.post('/register', registerValidator, validate, registerUser);
-router.post('/login', loginValidator, validate, loginUser);
-router.get('/getUserInfo', protect, getUserInfo);
-router.put('/changePassword', protect, changePasswordValidator, validate, changePassword);
-router.post('/forgotPassword', forgotPasswordValidator, validate, forgotPassword);
-router.post('/resetPassword', resetPasswordValidator, validate, resetPassword);
+const router = express.Router();
+
+// Controllers
+const {
+    register,
+    login,
+    getUserInfo,
+    updateProfile,
+    changePassword,
+    forgotPassword
+} = require("../controllers/authController");
+
+// Middleware
+const { protect } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/validationMiddleware");
+
+// Validators
+const {
+    registerValidator,
+    loginValidator,
+    changePasswordValidator,
+    forgotPasswordValidator
+} = require("../validators/authValidator");
+
+
+// ================= REGISTER =================
+
+router.post(
+    "/register",
+    registerValidator,
+    validate,
+    register
+);
+
+
+// ================= LOGIN =================
+
+router.post(
+    "/login",
+    loginValidator,
+    validate,
+    login
+);
+
+
+// ================= GET USER INFO =================
+
+router.get(
+    "/getUserInfo",
+    protect,
+    getUserInfo
+);
+
+
+// ================= UPDATE PROFILE =================
+
+router.put(
+    "/updateProfile",
+    protect,
+    updateProfile
+);
+
+
+// ================= CHANGE PASSWORD =================
+
+router.put(
+    "/changePassword",
+    protect,
+    changePasswordValidator,
+    validate,
+    changePassword
+);
+
+router.post(
+    "/forgotPassword",
+    forgotPasswordValidator,
+    validate,
+    forgotPassword
+);
+
 
 module.exports = router;

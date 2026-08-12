@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FaBoxOpen, FaShieldAlt, FaStore } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import axiosInstance from '../api/axiosInstance';
 
-const roleHome = { admin: '/admin', vendor: '/vendor', customer: '/' };
-
-const Login = () => {
-  const { login } = useAuth();
+const ResetPassword = () => {
+  const { token } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ newPassword: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,14 +17,19 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (form.newPassword !== form.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
-      toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      const redirectTo = location.state?.from?.pathname;
-      navigate(redirectTo || roleHome[user.role] || '/');
+      await axiosInstance.post('/auth/resetPassword', { token, newPassword: form.newPassword });
+      toast.success('Password reset successful. Please log in with your new password.');
+      navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'Could not reset password. The link may have expired.');
     } finally {
       setLoading(false);
     }
@@ -84,32 +86,43 @@ const Login = () => {
 
       <Col lg={7} className="mk-auth-form-side">
         <div style={{ width: '100%', maxWidth: 400 }}>
-          <h3 className="mb-1">Welcome back</h3>
-          <p className="text-muted mb-4">Log in to continue to Multikart.</p>
+          <h3 className="mb-1">Reset password</h3>
+          <p className="text-muted mb-4">Choose a new password for your account.</p>
 
           {error && <Alert variant="danger">{error}</Alert>}
 
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Email address</Form.Label>
-              <Form.Control type="email" name="email" required value={form.email} onChange={handleChange} placeholder="you@example.com" />
+              <Form.Label>New password</Form.Label>
+              <Form.Control
+                type="password"
+                name="newPassword"
+                required
+                minLength={6}
+                value={form.newPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
             </Form.Group>
             <Form.Group className="mb-4">
-              <div className="d-flex justify-content-between align-items-center">
-                <Form.Label>Password</Form.Label>
-                <Link to="/forgot-password" className="small">
-                  Forgot password?
-                </Link>
-              </div>
-              <Form.Control type="password" name="password" required value={form.password} onChange={handleChange} placeholder="••••••••" />
+              <Form.Label>Confirm new password</Form.Label>
+              <Form.Control
+                type="password"
+                name="confirmPassword"
+                required
+                minLength={6}
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
             </Form.Group>
             <Button type="submit" variant="primary" className="w-100" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
+              {loading ? 'Resetting...' : 'Reset password'}
             </Button>
           </Form>
 
           <p className="text-center text-muted mt-4 mb-0 small">
-            Don&apos;t have an account? <Link to="/register">Create one</Link>
+            Remembered your password? <Link to="/login">Back to login</Link>
           </p>
         </div>
       </Col>
@@ -117,4 +130,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword;

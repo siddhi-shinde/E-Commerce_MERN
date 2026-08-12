@@ -7,6 +7,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import { fetchCart } from '../store/cartSlice';
 import { formatCurrency } from '../utils/formatCurrency';
+import { loadRazorpayScript } from '../utils/loadRazorpay';
 
 const Checkout = () => {
   const { user } = useAuth();
@@ -26,6 +27,7 @@ const Checkout = () => {
     pincode: user?.pincode || '',
   });
   const [paymentMethod, setPaymentMethod] = useState('cash_on_delivery');
+  const [payingOnline, setPayingOnline] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCart());
@@ -38,21 +40,87 @@ const Checkout = () => {
 
   const handleChange = (e) => setAddress({ ...address, [e.target.name]: e.target.value });
 
+  const placeCodOrder = async () => {
+    const { data } = await axiosInstance.post('/orders/placeOrder', {
+      shippingAddress: address,
+      paymentMethod: 'cash_on_delivery',
+    });
+    return data.order;
+  };
+
+  const payWithRazorpay = async () => {
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded) {
+      throw new Error('Could not load Razorpay checkout. Please check your connection and try again.');
+    }
+
+    let createData;
+    try {
+      const res = await axiosInstance.post('/payments/createOrder');
+      createData = res.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Could not initiate payment');
+    }
+
+    return new Promise((resolve, reject) => {
+      const options = {
+        key: createData.key,
+        amount: createData.amount,
+        currency: createData.currency,
+        order_id: createData.razorpayOrderId,
+        name: 'Multikart',
+        description: 'Order payment',
+        prefill: {
+          name: address.name,
+          email: user?.email,
+          contact: address.contactNumber,
+        },
+        theme: { color: '#4f46e5' },
+        handler: async (response) => {
+          try {
+            const { data } = await axiosInstance.post('/payments/verifyPayment', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              shippingAddress: address,
+            });
+            resolve(data.order);
+          } catch (err) {
+            reject(new Error(err.response?.data?.message || 'Payment succeeded but order verification failed'));
+          }
+        },
+        modal: {
+          ondismiss: () => reject(new Error('CANCELLED')),
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', () => reject(new Error('Payment failed. Please try again.')));
+      rzp.open();
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { data } = await axiosInstance.post('/orders/placeOrder', {
-        shippingAddress: address,
-        paymentMethod,
-      });
+      let order;
+      if (paymentMethod === 'online') {
+        setPayingOnline(true);
+        order = await payWithRazorpay();
+      } else {
+        order = await placeCodOrder();
+      }
       await dispatch(fetchCart());
       toast.success('Order placed successfully!');
-      navigate(`/orders/${data.order._id}`, { state: { justPlaced: true } });
+      navigate(`/orders/${order._id}`, { state: { justPlaced: true } });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not place order');
+      if (err.message !== 'CANCELLED') {
+        toast.error(err.message || err.response?.data?.message || 'Could not place order');
+      }
     } finally {
       setSubmitting(false);
+      setPayingOnline(false);
     }
   };
 
@@ -115,14 +183,27 @@ const Checkout = () => {
                 type="radio"
                 id="online"
                 name="paymentMethod"
-                label="Pay Online"
+                label="Pay Online (Card / UPI / Netbanking via Razorpay)"
                 checked={paymentMethod === 'online'}
                 onChange={() => setPaymentMethod('online')}
               />
+
+              {paymentMethod === 'online' && (
+                <p className="text-muted small mt-3 mb-0 ps-4">
+                  You'll be redirected to Razorpay's secure checkout to complete payment — card, UPI, netbanking and
+                  wallet details are handled entirely by Razorpay and never touch our servers.
+                </p>
+              )}
             </Card>
 
             <Button type="submit" variant="primary" size="lg" className="w-100" disabled={submitting}>
-              {submitting ? 'Placing order...' : `Place order — ${formatCurrency(cart.finalCartAmount)}`}
+              {submitting
+                ? payingOnline
+                  ? 'Waiting for payment...'
+                  : 'Placing order...'
+                : paymentMethod === 'online'
+                ? `Pay ${formatCurrency(cart.finalCartAmount)}`
+                : `Place order — ${formatCurrency(cart.finalCartAmount)}`}
             </Button>
           </Form>
         </Col>

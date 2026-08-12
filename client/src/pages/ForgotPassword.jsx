@@ -1,33 +1,24 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Row, Col, Form, Button, Alert } from 'react-bootstrap';
-import { toast } from 'react-toastify';
 import { FaBoxOpen, FaShieldAlt, FaStore } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import axiosInstance from '../api/axiosInstance';
 
-const roleHome = { admin: '/admin', vendor: '/vendor', customer: '/' };
-
-const Login = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
-      toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      const redirectTo = location.state?.from?.pathname;
-      navigate(redirectTo || roleHome[user.role] || '/');
+      await axiosInstance.post('/auth/forgotPassword', { email });
+      setSent(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -84,32 +75,36 @@ const Login = () => {
 
       <Col lg={7} className="mk-auth-form-side">
         <div style={{ width: '100%', maxWidth: 400 }}>
-          <h3 className="mb-1">Welcome back</h3>
-          <p className="text-muted mb-4">Log in to continue to Multikart.</p>
+          <h3 className="mb-1">Forgot password?</h3>
+          <p className="text-muted mb-4">Enter your email and we&apos;ll send you a reset link.</p>
 
           {error && <Alert variant="danger">{error}</Alert>}
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Email address</Form.Label>
-              <Form.Control type="email" name="email" required value={form.email} onChange={handleChange} placeholder="you@example.com" />
-            </Form.Group>
-            <Form.Group className="mb-4">
-              <div className="d-flex justify-content-between align-items-center">
-                <Form.Label>Password</Form.Label>
-                <Link to="/forgot-password" className="small">
-                  Forgot password?
-                </Link>
-              </div>
-              <Form.Control type="password" name="password" required value={form.password} onChange={handleChange} placeholder="••••••••" />
-            </Form.Group>
-            <Button type="submit" variant="primary" className="w-100" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
-            </Button>
-          </Form>
+          {sent ? (
+            <Alert variant="success">
+              If that email is registered, a password reset link has been sent. It will expire in 30 minutes.
+            </Alert>
+          ) : (
+            <Form onSubmit={handleSubmit}>
+              <Form.Group className="mb-4">
+                <Form.Label>Email address</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+              </Form.Group>
+              <Button type="submit" variant="primary" className="w-100" disabled={loading}>
+                {loading ? 'Sending...' : 'Send reset link'}
+              </Button>
+            </Form>
+          )}
 
           <p className="text-center text-muted mt-4 mb-0 small">
-            Don&apos;t have an account? <Link to="/register">Create one</Link>
+            Remembered your password? <Link to="/login">Back to login</Link>
           </p>
         </div>
       </Col>
@@ -117,4 +112,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword;
